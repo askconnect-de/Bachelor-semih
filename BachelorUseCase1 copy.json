@@ -1,0 +1,392 @@
+{
+  "name": "BachelorUseCase1 copy",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ffc51704-8fe1-4f3f-954b-030d8c1f8974",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        240
+      ],
+      "id": "93cbc462-8684-4a3b-b513-3e4643f89537",
+      "name": "Webhook",
+      "webhookId": "ffc51704-8fe1-4f3f-954b-030d8c1f8974"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        656,
+        672
+      ],
+      "id": "d5a1eb46-fc69-4784-821e-bf62c0ae099a",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "hPAARLptSARpu6hy",
+          "name": "OpenAi account Semih"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.webhookUrl }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        352,
+        464
+      ],
+      "id": "327792e2-03e8-4b58-a92f-5e70c3127ab2",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1424,
+        240
+      ],
+      "id": "ff277c23-bc9c-4880-9da2-31bb248bb78c",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Du bist ein Assistent für das Restaurant \"Losteria\" und hilfst bei der Verwaltung von Tischreservierungen.\n\nWir haben folgende Kundenanfrage erhalten:\n\n- Anfrag: {{ $json.body.Anfrage }}\n- Name: {{ $json.body.Name }}\n- Datum: {{ $json.body.Datum }}\n- Uhrzeit: {{ $json.body.Uhrzeit }}\n- Länge der Tischreservierung in minuten: {{ $json.body.Laenge }}\n- Anzahl der Personen: {{ $json.body.Anzahl }}\n\nHeute ist folgendes Datum:  {{ $now.toLocal() }}",
+        "options": {
+          "systemMessage": "=Du bist ein AI-Assistent für \"Losteria\"\nDeine Hauptaufgabe ist es, **Tischreservierungen zu verwalten**.\n\nDu kannst:\n- Neue Reservierungen im Kalender **erstellen**\n- Bestehemde Reservierungen **aktualisieren**\n- Reservierungen **anzeigen**\n- Reservierungen **stornieren**\n- Bei jeder Anfrage prüfe zunächst, ob Termine im Kalender überhaupt frei sind. Wenn wir neue Anfragen beispielsweise bekommen sollen, wollen wir nämlich keine Überschneidungen haben und somit doppelte Buchungen vermeiden.\n\nDu hast Zugriff zu folenden Tools:\n- **Create Event** - hiermit erstellst du eine neue Reservierung\n- **Update Event** - hiermit änderst du eine bestehende Reservierung\n- **Get many Events** - hiermit siehst du alle aktuellen und kommenden Reservierungen\n- **Get an Event** - hiermit holst du dir spezifische Informationen zu einzelnen Reservierungen\n- **Delete Event** - hiermit stornierst du eine Reservierung\n\nAntworte **kurz, klar und freundlich**.\nWenn Informationen fehlen (z.B. Datum, Uhrzeit, Personenanzahl, Name). frage gezielt nach um diese Informationen einzuholen.\nDeine Kommunikationsart soll professionell, höflich und effizient sein."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        240
+      ],
+      "id": "a7f2a980-6119-4469-acdc-d9a35674a8d3",
+      "name": "Orchestrator"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        464
+      ],
+      "id": "12fb2c5a-522e-4af9-9854-820313a73044",
+      "name": "Termin-Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 2.2,
+      "position": [
+        768,
+        464
+      ],
+      "id": "9852fa95-f4bb-4f20-939e-14fd965b7942",
+      "name": "Buchungs Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 2.2,
+      "position": [
+        1056,
+        464
+      ],
+      "id": "05aa76de-8c25-4523-956d-10ce01c46eb0",
+      "name": "Stornier Agent"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        848,
+        672
+      ],
+      "id": "b1e87126-787c-497a-9ef1-4eacb12d53ce",
+      "name": "Get row(s) in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "LNivf02bfItTqJKY",
+          "name": "Google Sheets account Semih"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        1040,
+        672
+      ],
+      "id": "44a8dcf6-fe38-4914-b2a9-5d9da3b628df",
+      "name": "Append row in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "LNivf02bfItTqJKY",
+          "name": "Google Sheets account Semih"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        224,
+        464
+      ],
+      "id": "8a8edab3-f507-4df3-b0f4-1eb9aa9f13ea",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "hPAARLptSARpu6hy",
+          "name": "OpenAi account Semih"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "documentId": {
+          "__rl": true,
+          "value": "1FO9drkSGGzHToHW0mFUXJ5LXE-DIjLQpIHe-y-2JhdY",
+          "mode": "list",
+          "cachedResultName": "Standard-Zimmer",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FO9drkSGGzHToHW0mFUXJ5LXE-DIjLQpIHe-y-2JhdY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Tabellenblatt1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FO9drkSGGzHToHW0mFUXJ5LXE-DIjLQpIHe-y-2JhdY/edit#gid=0"
+        },
+        "startIndex": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start_Row_Number', ``, 'number') }}"
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        1168,
+        672
+      ],
+      "id": "c5bcbe07-60c1-49d6-972f-90f0561dbb1d",
+      "name": "Delete rows or columns from sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "LNivf02bfItTqJKY",
+          "name": "Google Sheets account Semih"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Orchestrator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Termin-Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Buchungs Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Stornier Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Orchestrator",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Orchestrator": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Termin-Agent": {
+      "ai_tool": [
+        [
+          {
+            "node": "Orchestrator",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buchungs Agent": {
+      "ai_tool": [
+        [
+          {
+            "node": "Orchestrator",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stornier Agent": {
+      "ai_tool": [
+        [
+          {
+            "node": "Orchestrator",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "Termin-Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "Buchungs Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Orchestrator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete rows or columns from sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "Stornier Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Berlin",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "cfa74310-2c9c-42f2-9bf9-0c7699bc3731",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "fd4f56517f5e1cea8ba3b2de8e01149dd917d2c5c184f4dabae8875ad211a1a7"
+  },
+  "id": "jJSd7QpARHzylknJ",
+  "tags": []
+}
